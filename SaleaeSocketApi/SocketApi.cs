@@ -302,6 +302,27 @@ namespace Saleae.SocketApi
 		}
 
 		/// <summary>
+		/// Start capture and save when capture finishes. returns true if successful, and false if a capture error ocurred.
+		/// </summary>
+		/// <param name="file">File to save capture to</param>
+		public void TryCaptureToFile( String file )
+		{
+			try
+			{
+				String export_command = capture_to_file_cmd + ", ";
+				export_command += file;
+				WriteString( export_command );
+				String response = "";
+				GetResponse( ref response );
+				return true;
+			} catch( SaleaeSocketApiException ex)
+			{
+				return false;
+			}
+
+		}
+
+		/// <summary>
 		/// Save active tab capture to file
 		/// </summary>
 		/// <param name="file">File to save capture to</param>
@@ -655,6 +676,25 @@ namespace Saleae.SocketApi
 
 			String response = "";
 			GetResponse( ref response );
+		}
+
+		/// <summary>
+		/// Start device capture, returns true if successful, false if an error occurs.
+		/// </summary>
+		public bool TryCapture()
+		{
+			try
+			{
+				String export_command = capture_cmd;
+				WriteString( export_command );
+
+				String response = "";
+				GetResponse( ref response );
+			} catch( SaleaeSocketApiException ex )
+			{
+				return false;	
+			}
+			return true;
 		}
 
 		/// <summary>
