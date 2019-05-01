@@ -20,8 +20,8 @@ namespace Saleae.SocketApi
 
 		//Command strings
 		const String set_trigger_cmd = "SET_TRIGGER";
-        const String get_num_samples_cmd = "GET_NUM_SAMPLES";
-        const String set_num_samples_cmd = "SET_NUM_SAMPLES";
+		const String get_num_samples_cmd = "GET_NUM_SAMPLES";
+		const String set_num_samples_cmd = "SET_NUM_SAMPLES";
 		const String get_sample_rate_cmd = "GET_SAMPLE_RATE";
 		const String set_sample_rate_cmd = "SET_SAMPLE_RATE";
 
@@ -57,13 +57,13 @@ namespace Saleae.SocketApi
 
 		const String close_all_tabs_cmd = "CLOSE_ALL_TABS";
 
-        const String exit = "EXIT";
+		const String exit = "EXIT";
 
-        const String get_capture_range_cmd = "GET_CAPTURE_RANGE";
-        const String get_viewstate_cmd = "GET_VIEWSTATE";
-        const String set_viewstate_cmd = "SET_VIEWSTATE";
+		const String get_capture_range_cmd = "GET_CAPTURE_RANGE";
+		const String get_viewstate_cmd = "GET_VIEWSTATE";
+		const String set_viewstate_cmd = "SET_VIEWSTATE";
 
-        public SaleaeClient( String host_str = "127.0.0.1", int port_input = 10429 )
+		public SaleaeClient( String host_str = "127.0.0.1", int port_input = 10429 )
 		{
 			this.port = port_input;
 			this.host = host_str;
@@ -138,25 +138,25 @@ namespace Saleae.SocketApi
 
 			}
 
-			string tx_command = String.Join(", ", command );
+			string tx_command = String.Join( ", ", command );
 			WriteString( tx_command );
-				
+
 			String response = "";
 			GetResponse( ref response );
 		}
 
-        /// <summary>
-        /// Get the number of samples to capture
-        /// </summary>
-        /// <returns></returns>
-        public int GetNumSamples()
-        {
-            WriteString(get_num_samples_cmd);
-            String response = "";
-            GetResponse(ref response);
+		/// <summary>
+		/// Get the number of samples to capture
+		/// </summary>
+		/// <returns></returns>
+		public int GetNumSamples()
+		{
+			WriteString( get_num_samples_cmd );
+			String response = "";
+			GetResponse( ref response );
 
-            return int.Parse(response.Split('\n').First());
-        }
+			return int.Parse( response.Split( '\n' ).First() );
+		}
 
 		/// <summary>
 		/// Set number of samples for capture
@@ -227,8 +227,8 @@ namespace Saleae.SocketApi
 				int index = i * 3;
 				voltage_options.Add( new DigitalVoltageOption
 				{
-					Index = int.Parse( elems[index] ),
-					Description = elems[index+1],
+					Index = int.Parse( elems[ index ] ),
+					Description = elems[ index + 1 ],
 					IsSelected = elems[ index + 2 ].Contains( "SELECTED" ) && !elems[ index + 2 ].Contains( "NOT_SELECTED" )
 				} );
 
@@ -278,7 +278,7 @@ namespace Saleae.SocketApi
 			String response = "";
 			GetResponse( ref response );
 
-			var elems = response.Split( '\n' ).Take(2).Select( x => int.Parse( x.Trim() ) ).ToList();
+			var elems = response.Split( '\n' ).Take( 2 ).Select( x => int.Parse( x.Trim() ) ).ToList();
 
 			if( elems.Count() != 2 )
 				throw new SaleaeSocketApiException( "unexpected value" );
@@ -305,21 +305,22 @@ namespace Saleae.SocketApi
 		/// Start capture and save when capture finishes. returns true if successful, and false if a capture error ocurred.
 		/// </summary>
 		/// <param name="file">File to save capture to</param>
-		public void TryCaptureToFile( String file )
+		public bool TryCaptureToFile( String file )
 		{
 			try
 			{
-				String export_command = capture_to_file_cmd + ", ";
-				export_command += file;
-				WriteString( export_command );
+				String command = capture_to_file_cmd + ", ";
+				command += file;
+				WriteString( command );
+
 				String response = "";
 				GetResponse( ref response );
-				return true;
-			} catch( SaleaeSocketApiException ex)
+			}
+			catch( SaleaeSocketApiException )
 			{
 				return false;
 			}
-
+			return true;
 		}
 
 		/// <summary>
@@ -500,15 +501,15 @@ namespace Saleae.SocketApi
 			GetResponse( ref response );
 		}
 
-        /// <summary>
-        /// This replaced the hard to use and buggy EXPORT_DATA command. The additional parameters, capture_contains_digital_channels and capture_contains_analog_channels, must be set if the capture itself contains channels of those types.
-        /// This is because some export commands, such as digital-only exports and analog-only exports vary slightly if the source capture contains both digital and analog only channels.
-        /// </summary>
-        /// <param name="export_settings"></param>
-        /// <param name="capture_contains_digital_channels">Set to true if the capture contains digital channels.</param>
-        /// <param name="capture_contains_analog_channels">Set to true if the capture contains analog channels.</param>
-        /// <returns></returns>
-        public bool ExportData2( ExportDataStruct export_settings, bool capture_contains_digital_channels, bool capture_contains_analog_channels )
+		/// <summary>
+		/// This replaced the hard to use and buggy EXPORT_DATA command. The additional parameters, capture_contains_digital_channels and capture_contains_analog_channels, must be set if the capture itself contains channels of those types.
+		/// This is because some export commands, such as digital-only exports and analog-only exports vary slightly if the source capture contains both digital and analog only channels.
+		/// </summary>
+		/// <param name="export_settings"></param>
+		/// <param name="capture_contains_digital_channels">Set to true if the capture contains digital channels.</param>
+		/// <param name="capture_contains_analog_channels">Set to true if the capture contains analog channels.</param>
+		/// <returns></returns>
+		public bool ExportData2( ExportDataStruct export_settings, bool capture_contains_digital_channels, bool capture_contains_analog_channels )
 		{
 			bool is_mixed_mode_capture = capture_contains_digital_channels && capture_contains_analog_channels; //different export options happen in this case.
 			if( is_mixed_mode_capture && export_settings.ExportChannelSelection == DataExportChannelSelection.AllChannels )
@@ -529,7 +530,7 @@ namespace Saleae.SocketApi
 				if( export_settings.DigitalChannelsToExport != null && export_settings.DigitalChannelsToExport.Any() )
 					command_parts.AddRange( export_settings.DigitalChannelsToExport.Select( x => new Channel { Index = x, DataType = Channel.ChannelDataType.DigitalChannel }.GetExportString() ) );
 				if( export_settings.AnalogChannelsToExport != null && export_settings.AnalogChannelsToExport.Any() )
-				command_parts.AddRange( export_settings.AnalogChannelsToExport.Select( x => new Channel { Index = x, DataType = Channel.ChannelDataType.AnalogChannel }.GetExportString() ) );
+					command_parts.AddRange( export_settings.AnalogChannelsToExport.Select( x => new Channel { Index = x, DataType = Channel.ChannelDataType.AnalogChannel }.GetExportString() ) );
 			}
 
 			//time options.
@@ -575,7 +576,7 @@ namespace Saleae.SocketApi
 			}
 
 			//digital binary
-			if( capture_contains_digital_channels &&  export_settings.DataExportType == DataExportType.ExportBinary && ( !is_mixed_mode_capture || export_settings.DataExportMixedExportMode == DataExportMixedModeExportType.DigitalOnly ) )
+			if( capture_contains_digital_channels && export_settings.DataExportType == DataExportType.ExportBinary && ( !is_mixed_mode_capture || export_settings.DataExportMixedExportMode == DataExportMixedModeExportType.DigitalOnly ) )
 			{
 				command_parts.Add( export_settings.BinaryOutputMode.GetDescription() );
 				command_parts.Add( export_settings.BinaryBitShifting.GetDescription() );
@@ -638,8 +639,8 @@ namespace Saleae.SocketApi
 				var elements = line.Split( ',' ).Select( x => x.Trim() ).ToList();
 				analyzers.Add( new Analyzer
 				{
-					AnalyzerType = elements[0],
-					Index = int.Parse( elements[1] )
+					AnalyzerType = elements[ 0 ],
+					Index = int.Parse( elements[ 1 ] )
 				} );
 			}
 
@@ -685,14 +686,15 @@ namespace Saleae.SocketApi
 		{
 			try
 			{
-				String export_command = capture_cmd;
-				WriteString( export_command );
+				String command = capture_cmd;
+				WriteString( command );
 
 				String response = "";
 				GetResponse( ref response );
-			} catch( SaleaeSocketApiException ex )
+			}
+			catch( SaleaeSocketApiException )
 			{
-				return false;	
+				return false;
 			}
 			return true;
 		}
@@ -754,7 +756,7 @@ namespace Saleae.SocketApi
 			GetResponse( ref response );
 			var response_strings = response.Split( '\n' ).ToList();
 			response_strings.RemoveAll( x => x.Contains( "ACK" ) );
-			
+
 
 			List<ConnectedDevice> devices = new List<ConnectedDevice>();
 
@@ -773,7 +775,7 @@ namespace Saleae.SocketApi
 					Name = elements[ 1 ],
 					DeviceType = device_type,
 					DeviceId = Convert.ToUInt64( elements[ 3 ].Substring( 2 ), 16 ),
-					IsActive = (elements.Count() == 5 && elements[4] == "ACTIVE") ? true : false
+					IsActive = ( elements.Count() == 5 && elements[ 4 ] == "ACTIVE" ) ? true : false
 				};
 				devices.Add( device );
 			}
@@ -872,7 +874,7 @@ namespace Saleae.SocketApi
 			bool processing_finished = false;
 			do
 			{
-				
+
 				processing_finished = IsProcessingComplete();
 
 				if( !processing_finished )
@@ -994,88 +996,88 @@ namespace Saleae.SocketApi
 			GetResponse( ref response );
 		}
 
-        /// <summary>
-        /// Close the Logic software. this will close the socket.
-        /// </summary>
-        public void Exit()
-        {
-            WriteString(exit);
-        }
+		/// <summary>
+		/// Close the Logic software. this will close the socket.
+		/// </summary>
+		public void Exit()
+		{
+			WriteString( exit );
+		}
 
-        /// <summary>
-        /// Returns the index of the first valid sample (0, unless a trigger was used)
-        /// The trigger Sample (0, unless a trigger was used)
-        /// The ending sample.
-        /// The LCM Sample Rate (least common multiple)
-        /// Sample indexes are in LCM samples, which is the least common multiple of the digital sample rate and the analog sample rate
-        /// The requires Logic software version 1.2.18 or greater.
-        /// </summary>
-        /// <returns></returns>
-        public CaptureRange GetCaptureRange()
-        {
-            String export_command = get_capture_range_cmd;
-            WriteString(export_command);
+		/// <summary>
+		/// Returns the index of the first valid sample (0, unless a trigger was used)
+		/// The trigger Sample (0, unless a trigger was used)
+		/// The ending sample.
+		/// The LCM Sample Rate (least common multiple)
+		/// Sample indexes are in LCM samples, which is the least common multiple of the digital sample rate and the analog sample rate
+		/// The requires Logic software version 1.2.18 or greater.
+		/// </summary>
+		/// <returns></returns>
+		public CaptureRange GetCaptureRange()
+		{
+			String export_command = get_capture_range_cmd;
+			WriteString( export_command );
 
-            String response = "";
-            GetResponse(ref response);
-            //remove trailing ACK
-            if (!response.EndsWith("ACK"))
-                throw new SaleaeSocketApiException("invalid reponse");
-            response = response.Remove(response.LastIndexOf("ACK"));
+			String response = "";
+			GetResponse( ref response );
+			//remove trailing ACK
+			if( !response.EndsWith( "ACK" ) )
+				throw new SaleaeSocketApiException( "invalid reponse" );
+			response = response.Remove( response.LastIndexOf( "ACK" ) );
 
-            String[] input_string = response.Split(',');
+			String[] input_string = response.Split( ',' );
 
-            return new CaptureRange
-            {
-                StartingSample = UInt64.Parse(input_string[0]),
-                TriggerSample = UInt64.Parse(input_string[1]),
-                EndingSample = UInt64.Parse(input_string[2]),
-                LcmSampleRate = UInt32.Parse(input_string[3])
-            };
-        }
+			return new CaptureRange
+			{
+				StartingSample = UInt64.Parse( input_string[ 0 ] ),
+				TriggerSample = UInt64.Parse( input_string[ 1 ] ),
+				EndingSample = UInt64.Parse( input_string[ 2 ] ),
+				LcmSampleRate = UInt32.Parse( input_string[ 3 ] )
+			};
+		}
 
-        /// <summary>
-        /// Returns the current viewstate information of the open tab. 
-        /// The requires Logic software version 1.2.18 or greater.
-        /// </summary>
-        /// <returns></returns>
-        public ViewState GetViewState()
-        {
-            String export_command = get_viewstate_cmd;
-            WriteString(export_command);
+		/// <summary>
+		/// Returns the current viewstate information of the open tab. 
+		/// The requires Logic software version 1.2.18 or greater.
+		/// </summary>
+		/// <returns></returns>
+		public ViewState GetViewState()
+		{
+			String export_command = get_viewstate_cmd;
+			WriteString( export_command );
 
-            String response = "";
-            GetResponse(ref response);
-        
-            //remove trailing ACK
-            if (!response.EndsWith("ACK"))
-                throw new SaleaeSocketApiException("invalid reponse");
-            response = response.Remove(response.LastIndexOf("ACK"));
+			String response = "";
+			GetResponse( ref response );
 
-            String[] input_string = response.Split(',');
+			//remove trailing ACK
+			if( !response.EndsWith( "ACK" ) )
+				throw new SaleaeSocketApiException( "invalid reponse" );
+			response = response.Remove( response.LastIndexOf( "ACK" ) );
 
-            return new ViewState
-            {
-                ZoomSamplesPerPixel = double.Parse(input_string[0]),
-                PanStartingSample = double.Parse(input_string[1]),
-                LcmSampleRate = UInt32.Parse(input_string[2])
-            };
-        }
+			String[] input_string = response.Split( ',' );
 
-        /// <summary>
-        /// Sets the viewstate of the open tab.
-        /// The requires Logic software version 1.2.18 or greater.
-        /// </summary>
-        /// <param name="zoom_samples_per_pixel">The zoom level, in samples per pixel. larger is more zoomed out. 1 represents 1 sample per pixel. (samples are realitve to the LCM rate)</param>
-        /// <param name="pan_starting_sample">The sample index of the left edge of the display, relative to the LCM sample rate</param>
-        public void SetViewState( double zoom_samples_per_pixel, double pan_starting_sample )
-        {
-            String export_command = String.Format("{0}, {1:f}, {2:f}", set_viewstate_cmd, zoom_samples_per_pixel, pan_starting_sample);
-            WriteString(export_command);
+			return new ViewState
+			{
+				ZoomSamplesPerPixel = double.Parse( input_string[ 0 ] ),
+				PanStartingSample = double.Parse( input_string[ 1 ] ),
+				LcmSampleRate = UInt32.Parse( input_string[ 2 ] )
+			};
+		}
 
-            String response = "";
-            GetResponse(ref response);
-        }
+		/// <summary>
+		/// Sets the viewstate of the open tab.
+		/// The requires Logic software version 1.2.18 or greater.
+		/// </summary>
+		/// <param name="zoom_samples_per_pixel">The zoom level, in samples per pixel. larger is more zoomed out. 1 represents 1 sample per pixel. (samples are realitve to the LCM rate)</param>
+		/// <param name="pan_starting_sample">The sample index of the left edge of the display, relative to the LCM sample rate</param>
+		public void SetViewState( double zoom_samples_per_pixel, double pan_starting_sample )
+		{
+			String export_command = String.Format( "{0}, {1:f}, {2:f}", set_viewstate_cmd, zoom_samples_per_pixel, pan_starting_sample );
+			WriteString( export_command );
+
+			String response = "";
+			GetResponse( ref response );
+		}
 
 		private bool TryParseDeviceType( string input, out DeviceType device_type )
 		{
